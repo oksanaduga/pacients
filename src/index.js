@@ -24,21 +24,31 @@ class Index extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeUserDataForm = this.handleChangeUserDataForm.bind(this);
     this.handleEditUser = this.handleEditUser.bind(this);
+    this.handleDeleteUser = this.handleDeleteUser.bind(this);
   }
 
   handleSubmit(event) {
     event.preventDefault();
     const { registeredUsers, registeredUsersLastIndex, userDataForm } = this.state;
-    const { id } = userDataForm.id;
+    const { id } = userDataForm;
 
-    if (id == '') {
+    if (userDataForm.id == '') {
       this.setState({registeredUsersLastIndex: registeredUsersLastIndex + 1});
       userDataForm.id = registeredUsersLastIndex + 1;
+      this.setState({registeredUsers: [...registeredUsers, userDataForm ]});
     } else {
-      const dataForEdit = registeredUsers.filter((user) => user.id == id);
+      const dataForEdit = registeredUsers.map((user, i) => {
+        if (user.id == userDataForm.id) {
+          const oldId = user.id;
+          userDataForm.id = oldId;
+          user[i] = userDataForm;
+          return user[i];
+        }
+        return user;
+      });
+      this.setState({registeredUsers: [...dataForEdit ]});
     }
 
-    this.setState({registeredUsers: [...registeredUsers, userDataForm ]});
     this.setState({userDataForm: {
       name: '',
       sex: 'мужской',
@@ -62,10 +72,7 @@ class Index extends React.Component {
 
   handleEditUser(event) {
     const idUserForEdit = event.target.dataset.userId;
-
     const { registeredUsers, userDataForm } = this.state;
-    console.log(event.target.dataset.userId);
-    console.log('id');
     const filterUsersById = registeredUsers.filter((el) => el['id'] == idUserForEdit)[0];
     const { name, sex, date, address, medicine, id } = filterUsersById;
 
@@ -77,12 +84,17 @@ class Index extends React.Component {
         medicine: medicine,
         id: id,
       }});
-    console.log(filterUsersById);
+  }
+
+  handleDeleteUser(event) {
+    const idUserForEdit = event.target.dataset.userId;
+    const { registeredUsers, userDataForm } = this.state;
+    const filterUsersById = registeredUsers.filter((el) => el['id'] != idUserForEdit);
+    this.setState({registeredUsers: [...filterUsersById ]});
   }
 
   render() {
     const { searchData, registeredUsers } = this.state;
-
     const filterUsers = registeredUsers.filter((el) => {
       const { name, sex, date, address, medicine } = el;
       return name.includes(searchData) ||
@@ -105,7 +117,7 @@ class Index extends React.Component {
          <td>{medicine}</td>
          <td>
             <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать</a>
-            <a href="#" name='delete'>удалить</a>
+            <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>удалить</a>
          </td>
          </tr>
        )
