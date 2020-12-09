@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-//import RegistrationForm from './RegistrationForm';
-//import UserList from './UserList.js';
+import RegistrationForm from './RegistrationForm.js';
+import UsersList from './UsersList.js';
+import SearchUsers from './SearchUsers.js';
+
 
 class Index extends React.Component {
   constructor(props) {
@@ -30,14 +32,16 @@ class Index extends React.Component {
   handleSubmit(event) {
     event.preventDefault();
     const { registeredUsers, registeredUsersLastIndex, userDataForm } = this.state;
-    const { id } = userDataForm;
+    let newState = {};
 
     if (userDataForm.id == '') {
-      this.setState({registeredUsersLastIndex: registeredUsersLastIndex + 1});
-      userDataForm.id = registeredUsersLastIndex + 1;
-      this.setState({registeredUsers: [...registeredUsers, userDataForm ]});
+      const newId = registeredUsersLastIndex + 1;
+      userDataForm.id = newId;
+      const newUser = { ...userDataForm };
+      newState.registeredUsers = [...registeredUsers, newUser];
+      newState.registeredUsersLastIndex = newId;
     } else {
-      const dataForEdit = registeredUsers.map((user, i) => {
+      const newRegisteredUsers = registeredUsers.map((user, i) => {
         if (user.id == userDataForm.id) {
           const oldId = user.id;
           userDataForm.id = oldId;
@@ -46,17 +50,17 @@ class Index extends React.Component {
         }
         return user;
       });
-      this.setState({registeredUsers: [...dataForEdit ]});
+      newState.registeredUsers = newRegisteredUsers;
     }
-
-    this.setState({userDataForm: {
-      name: '',
-      sex: 'мужской',
-      date: '',
-      address: '',
-      medicine: '',
-      id: '',
-    }});
+    newState.userDataForm = {
+        name: '',
+        sex: 'мужской',
+        date: '',
+        address: '',
+        medicine: '',
+        id: '',
+    };
+    this.setState(newState);
   }
 
   handleChange(event) {
@@ -76,14 +80,16 @@ class Index extends React.Component {
     const filterUsersById = registeredUsers.filter((el) => el['id'] == idUserForEdit)[0];
     const { name, sex, date, address, medicine, id } = filterUsersById;
 
-      this.setState({userDataForm: {
-        name: name,
-        sex: sex,
-        date: date,
-        address: address,
-        medicine: medicine,
-        id: id,
-      }});
+      this.setState({
+        userDataForm: {
+          name: name,
+          sex: sex,
+          date: date,
+          address: address,
+          medicine: medicine,
+          id: id,
+        }
+      });
   }
 
   handleDeleteUser(event) {
@@ -94,7 +100,7 @@ class Index extends React.Component {
   }
 
   render() {
-    const { searchData, registeredUsers } = this.state;
+    const { searchData, registeredUsers, userDataForm } = this.state;
     const filterUsers = registeredUsers.filter((el) => {
       const { name, sex, date, address, medicine } = el;
       return name.includes(searchData) ||
@@ -109,80 +115,28 @@ class Index extends React.Component {
       const { name, sex, date, address, medicine, id } = el;
        return (
          <tr key={id}>
-         <td>{i + 1}</td>
-         <td>{name}</td>
-         <td>{sex}</td>
-         <td>{date}</td>
-         <td>{address}</td>
-         <td>{medicine}</td>
-         <td>
-            <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать</a>
-            <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>удалить</a>
-         </td>
+           <td>{i + 1}</td>
+           <td>{name}</td>
+           <td>{sex}</td>
+           <td>{date}</td>
+           <td>{address}</td>
+           <td>{medicine}</td>
+           <td>
+              <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать</a>
+              <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>удалить</a>
+           </td>
          </tr>
        )
     });
 
     return(
       <div>
-        <form className="userDataForm" onSubmit={this.handleSubmit}>
-          <label for="name">ФИО</label>
-          <input type="text" id="name" name="name"
-            value={this.state.userDataForm.name}
-            onChange={this.handleChangeUserDataForm}
-            placeholder="Иванов Иван Иванович"/>
-
-          <label for="sex">пол</label>
-          <select id="sex" name="sex"
-          value={this.state.userDataForm.sex}
-          onChange={this.handleChangeUserDataForm}>
-            <option>мужской</option>
-            <option>женский</option>
-          </select>
-
-          <label for="date">Дата рождения</label>
-          <input type="date" id="date" name="date"
-          value={this.state.userDataForm.date}
-          onChange={this.handleChangeUserDataForm}
-          />
-
-          <label for="address">Адрес</label>
-          <input type="text" id="address" name="address"
-          value={this.state.userDataForm.address}
-          onChange={this.handleChangeUserDataForm}
-          />
-
-          <label for="medicine">Номер полиса ОМС</label>
-          <input type="text" id="medicine" name="medicine"
-            value={this.state.userDataForm.medicine}
-            onChange={this.handleChangeUserDataForm}
-            placeholder="00000000000"/>
-
-          <input type='submit' value='Сохранить'/>
-        </form>
-        <form>
-          <label for="search">Поиск</label>
-          <input type="text" id="search" name="search"
-            value={this.state.searchData}
-            onChange={this.handleChange}
-          />
-        </form>
-        <table>
-          <thead>
-            <tr>
-              <th>№</th>
-              <th>ФИО</th>
-              <th>Пол</th>
-              <th>Дата рождения</th>
-              <th>Адрес</th>
-              <th>Номер полиса ОМС</th>
-              <th>Действие</th>
-            </tr>
-           </thead>
-           <tbody>
-            {rows}
-          </tbody>
-        </table>
+        <RegistrationForm value={this.state.userDataForm}
+          submit={this.handleSubmit}
+          change={this.handleChangeUserDataForm}
+        />
+        <SearchUsers value={this.state.searchData} change={this.handleChange}/>
+        <UsersList rows={rows}/>
       </div>
     )
   }
