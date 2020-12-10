@@ -6,11 +6,13 @@ function SearchUsers(props) {
   const change = props.change;
   return(
     <form>
-      <label for="search">Поиск</label>
-      <input type="text" id="search" name="search"
-        value={value}
-        onChange={change}
-      />
+      <div class="mb-3">
+        <label class="form-label" for="search">Поиск:</label>
+        <input class="form-control" type="text" id="search" name="search"
+          value={value}
+          onChange={change}
+        />
+    </div>
     </form>
  );
 };

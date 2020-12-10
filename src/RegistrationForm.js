@@ -5,40 +5,52 @@ function RegistrationForm(props) {
     const data = props.value;
     //const dataForm = this.props.userDataForm;
     return(
-      <form className="userDataForm" onSubmit={props.submit}>
-        <label for="name">ФИО</label>
-        <input type="text" id="name" name="name"
-          value={data.name}
-          onChange={props.change}
-          placeholder="Иванов Иван Иванович"/>
+      <form onSubmit={props.submit}>
+        <div class="mb-3">
+          <label class="form-label" for="name">ФИО</label>
+          <input class="form-control" type="text" id="name" name="name"
+              value={data.name}
+              onChange={props.change}
+              placeholder="Иванов Иван Иванович"
+          />
+        </div>
 
-        <label for="sex">пол</label>
-        <select id="sex" name="sex"
-        value={data.sex}
-        onChange={props.change}>
-          <option>мужской</option>
-          <option>женский</option>
-        </select>
+        <div class="mb-3">
+          <label class="form-label" for="sex">Пол</label>
+          <select class="form-control" id="sex" name="sex"
+              value={data.sex}
+              onChange={props.change}>
+                <option>мужской</option>
+                <option>женский</option>
+           </select>
+          </div>
 
-        <label for="date">Дата рождения</label>
-        <input type="date" id="date" name="date"
-        value={data.date}
-        onChange={props.change}
-        />
+          <div class="mb-3">
+            <label class="form-label" for="date">Дата рождения</label>
+            <input class="form-control" type="date" id="date" name="date"
+              value={data.date}
+              onChange={props.change}
+            />
+          </div>
 
-        <label for="address">Адрес</label>
-        <input type="text" id="address" name="address"
-        value={data.address}
-        onChange={props.change}
-        />
+          <div class="mb-3">
+            <label class="form-label" for="address">Адрес</label>
+            <input class="form-control" type="text" id="address" name="address"
+              value={data.address}
+              onChange={props.change}
+            />
+          </div>
 
-        <label for="medicine">Номер полиса ОМС</label>
-        <input type="text" id="medicine" name="medicine"
-          value={data.medicine}
-          onChange={props.change}
-          placeholder="00000000000"/>
+          <div class="mb-3">
+            <label class="form-label" for="medicine">Номер полиса ОМС</label>
+            <input class="form-control" type="text" id="medicine" name="medicine"
+                value={data.medicine}
+                onChange={props.change}
+                placeholder="00000000000"
+             />
+          </div>
 
-        <input type='submit' value='Сохранить'/>
+          <input class="btn btn-light" type='submit' value='Сохранить'/>
       </form>
     );
 }

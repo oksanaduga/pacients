@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 import RegistrationForm from './RegistrationForm.js';
 import UsersList from './UsersList.js';
@@ -110,7 +111,6 @@ class Index extends React.Component {
              medicine.includes(searchData);
     });
 
-
     const rows = filterUsers.map((el, i) => {
       const { name, sex, date, address, medicine, id } = el;
        return (
@@ -122,21 +122,29 @@ class Index extends React.Component {
            <td>{address}</td>
            <td>{medicine}</td>
            <td>
-              <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать</a>
-              <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>удалить</a>
+              <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать &nbsp;</a>
+              <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>Удалить</a>
            </td>
          </tr>
        )
     });
 
     return(
-      <div>
-        <RegistrationForm value={this.state.userDataForm}
-          submit={this.handleSubmit}
-          change={this.handleChangeUserDataForm}
-        />
-        <SearchUsers value={this.state.searchData} change={this.handleChange}/>
-        <UsersList rows={rows}/>
+      <div class="container-fluid">
+        <div class='row'>
+          <div class='col-3'>
+            <h2>Регистрация</h2>
+            <RegistrationForm value={this.state.userDataForm}
+              submit={this.handleSubmit}
+              change={this.handleChangeUserDataForm}
+            />
+          </div>
+          <div class='col-9'>
+            <h2>Зарегистрированные пользователи</h2>
+            <SearchUsers value={this.state.searchData} change={this.handleChange}/>
+            <UsersList rows={rows}/>
+          </div>
+        </div>
       </div>
     )
   }

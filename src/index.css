@@ -1,18 +1,10 @@
-h1 {
-  color: red;
-  border: 3px solid black;
+
+
+.col-3 {
+  background-color: #70AE6E;
+  height: 100vh;
 }
 
-table {
-  margin-top: 20px;
-  border-collapse: collapse;
-}
-
-td {
-  border-bottom: 2px solid lightgray;
-  padding: 10px;
-}
-
-.search {
-  margin: 40px 5px 5px 5px;
+.col-9 {
+  background-color: #d3ded4;
 }
