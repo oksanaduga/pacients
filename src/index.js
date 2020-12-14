@@ -30,8 +30,12 @@ class Index extends React.Component {
     this.handleDeleteUser = this.handleDeleteUser.bind(this);
   }
 
+  componentDidMount() {
+    const newState = JSON.parse(localStorage.getItem("newState"))
+    this.setState(newState);
+  }
+
   handleSubmit(event) {
-    event.preventDefault();
     const { registeredUsers, registeredUsersLastIndex, userDataForm } = this.state;
     let newState = {};
 
@@ -61,7 +65,8 @@ class Index extends React.Component {
         medicine: '',
         id: '',
     };
-    this.setState(newState);
+    var serialObjNewState = JSON.stringify(newState)
+    localStorage.setItem('newState', serialObjNewState);
   }
 
   handleChange(event) {
