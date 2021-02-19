@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://src/index.css"],"names":[],"mappings":"AAEA,OACE,wBAAyB,CACzB,YACF,CAEA,OACE,wBACF","file":"main.8de136dd.chunk.css","sourcesContent":["\n\n.col-3 {\n  background-color: #70AE6E;\n  height: 100vh;\n}\n\n.col-9 {\n  background-color: #d3ded4;\n}\n"]}
