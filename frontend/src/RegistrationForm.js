@@ -20,8 +20,8 @@ function RegistrationForm(props) {
           <select class="form-control" id="sex" name="sex"
               value={data.sex}
               onChange={props.change}>
-                <option>мужской</option>
-                <option>женский</option>
+                <option>m</option>
+                <option>f</option>
            </select>
           </div>
 

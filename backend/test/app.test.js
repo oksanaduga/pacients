@@ -3,6 +3,8 @@ const app = require('../app');
 const db = require('../db');
 const dayjs = require('dayjs');
 const pgp = require('pg-promise')();
+const validate = require();
+const validateParams = require('../extraFunction/validate.js');
 
 const clearDatabase = async () => {
   const clearDb = db.none('TRUNCATE users');
@@ -22,7 +24,7 @@ describe('POST /users', function () {
       birth_date: "1994-01-27",
       gender: "f",
       living_address: "ghghg",
-      insurance_policy: "8664595891057345"
+      insurance_policy: "86645958910"
     };
 
     await request(app)
@@ -53,7 +55,7 @@ describe('GET /users', function () {
       birth_date: "1961-06-16",
       gender: "m",
       living_address: "tekstilshika 45, 5",
-      insurance_policy: "8664595891057345"
+      insurance_policy: "86645957345"
     };
 
     const state = `
@@ -63,6 +65,12 @@ describe('GET /users', function () {
 
     const addUser = db.none(state, user);
 
+    const u = await db.one('SELECT name, birth_date, gender, living_address, insurance_policy  FROM users ORDER BY id DESC LIMIT 1');
+
+    console.log('take user from db');
+    console.log(u);
+
+
     const result = await request(app)
       .get(`/users`)
       .expect(200);
@@ -71,7 +79,7 @@ describe('GET /users', function () {
 
     const expected = {
       name: resultFromArray.name,
-      birth_date: dayjs(resultFromArray.birth_date).format('YYYY-MM-DD'),
+      birth_date: resultFromArray.birth_date, //dayjs(resultFromArray.birth_date).format('YYYY-MM-DD'),
       gender: resultFromArray.gender,
       living_address: resultFromArray.living_address,
       insurance_policy: resultFromArray.insurance_policy,
@@ -93,7 +101,7 @@ describe('PUT /users/:id', function() {
       birth_date: "1950-10-04",
       gender: "m",
       living_address: "earth 5, 4",
-      insurance_policy: "8664000893057345",
+      insurance_policy: "86693057345",
     };
 
     const state = `
@@ -109,7 +117,7 @@ describe('PUT /users/:id', function() {
       birth_date: "1950-03-04",
       gender: "m",
       living_address: "earth 5, 4",
-      insurance_policy: "8664000893057345",
+      insurance_policy: "86640007345",
     };
 
     await request(app)
@@ -136,7 +144,7 @@ describe('DELETE users/:id', function() {
       birth_date: "1950-10-04",
       gender: "m",
       living_address: "earth 5, 4",
-      insurance_policy: "8664000893057345",
+      insurance_policy: "86640008345",
     };
 
     const state = `
@@ -166,14 +174,14 @@ describe('GET some /users', function () {
       birth_date: "1950-10-04",
       gender: "m",
       living_address: "earth 5, 4",
-      insurance_policy: "8664000893057345",
+      insurance_policy: "86640008345",
     };
     const userTwo = {
       name: "weq",
       birth_date: "1994-01-27",
       gender: "f",
       living_address: "ghghg",
-      insurance_policy: "8664595891057345"
+      insurance_policy: "86641057345"
     };
 
     const cs = new pgp.helpers.ColumnSet(['name', 'birth_date', 'gender', 'living_address', 'insurance_policy'], {table: 'users'});
@@ -198,7 +206,43 @@ describe('GET some /users', function () {
     })
 
     expect(expected).toEqual([userTwo]);
-
   });
 });
+//====================================================================
+
+// тесты на валидацию даты
+describe("Validate function", () => {
+  test("it should check data from submit", () => {
+    const userOne = {
+      name: "Darvin",
+      birth_date: "",
+      gender: "m",
+      living_address: "earth 5, 4",
+      insurance_policy: "86640008945",
+    };
+    const userTwo = {
+      name: "Darvin",
+      birth_date: "2000-13-14",
+      gender: "m",
+      living_address: "earth 5, 4",
+      insurance_policy: "86643057345",
+    };
+    const userThree = {
+      name: "Darvin",
+      birth_date: "1996-03-09",
+      gender: "m",
+      living_address: "earth 5, 4",
+      insurance_policy: "86640057345",
+    };
+
+    const expectOne = validateParams(userOne);
+    const expectTwo = validateParams(userTwo);
+    const expectThree = validateParams(userThree);
+
+    expect(expectOne).toEqual('wrong date. please try 1999-01-01 format');
+    expect(expectTwo).toEqual('wrong date. please try 1999-01-01 format');
+    expect(expectThree).toEqual([]);
+  });
+});
+
 //====================================================================

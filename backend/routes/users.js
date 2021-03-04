@@ -1,12 +1,14 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../db');
+const validateParams = require('../extraFunction/validate.js');
+const dayjs = require('dayjs');
 
 // GET /users/ - получить все +
-// GET /users/:id - получить один +
+// GET /users/:id - получить один + --
 // POST /users/ - создать еще один +
 // PUT /users/:id - изменить какой-то+
-// DELETE /users/:id - удалить какой-то один+
+// DELETE /users/:id - удалить какой-то один+ add
 //GET search  -  поиск по введенным данным
 
 // GET /users/ - получить все +
@@ -14,11 +16,11 @@ const getUsers = async (searchData = '') => {
   let searchStr;
   if (searchData) {
     const state =`
-      SELECT * FROM users WHERE name LIKE '${searchData}%'
+      SELECT * FROM users WHERE name LIKE '${searchData}% ORDER BY id'
     `;
     searchStr = await db.any(state);
   } else {
-    searchStr = await db.any('SELECT * FROM users');
+    searchStr = await db.any('SELECT * FROM users ORDER BY id');
   }
   return searchStr;
 };
@@ -33,28 +35,22 @@ router.get('/', async (req, res, next) => {
     const searchParams = req.query.name;
     data = await getUsers(searchParams);
   }
-  res.json(data);
-  next();
+
+  const searchStrMap = await Promise.all(data.map(async (el) => {
+        const elForFormatting = await el;
+        const newEl = {
+          ...elForFormatting,
+          birth_date: dayjs(elForFormatting.birth_date).format('YYYY-MM-DD')
+        }
+        return newEl;
+      }));
+  res.json(searchStrMap);
+  //next();
 });
 //====================================================
 
 
 // POST /users/ - создать еще один +
-const validateParams = (data) => {
-  const errors = [];
-
-  if (Date.parse(data.birthDate) < 0) {
-    errors.push('wrong date. please try 1999-01-01 format');
-  }
-  if (data.gender !== 'm' && data.gender !== 'f') {
-    errors.push('wrong gender. please try "m" or "f"');
-  }
-  if (data.insurancePolicy && data.insurancePolicy.length !== 16) {
-    errors.push('wrong insurancePolicy. Should contains 16 digits');
-  }
-  return errors.length > 0 ? errors.join(', ') : [];
-};
-
 const createUser = async (data) => {
   const state = `
   INSERT INTO users(name, birth_date, gender, living_address, insurance_policy)
@@ -68,17 +64,16 @@ const createUser = async (data) => {
 
 router.post('/', async (req, res, next) => {
   const data = req.body;
-  console.log('req.body', req.body);
   const result = validateParams(data);
   if(result.errors) {
    res.status(400);
-   res.render('error');
+    res.json(result.errors);
    return;
  }
  const newUser = await createUser(data); //{ name: '', date: '' };
  res.status(201);
- //res.json(newUser);
- res.json({ user: newUser });
+ res.json(newUser);
+ //next();//  чтобы запрос не зависал
 });
 
 //=======================================================================
@@ -133,7 +128,6 @@ router.put('/:id', async (req, res, next) => {
   const newUser = await updateUser(data); //{ name: '', date: '' };
   res.status(200);
   res.json({ user: newUser });
-  next();
 });
 
 //=======================================================================
@@ -163,7 +157,7 @@ router.delete('/:id', async (req, res, next) => {
   const deleteUser = await deleteById(id);
   res.status(200);
   res.json({ user: deleteUser });
-  next();
+  //next();
 })
 //=======================================================================
 

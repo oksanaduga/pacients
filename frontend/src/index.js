@@ -11,43 +11,50 @@ class Index extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      registeredUsers: [],
-      searchData: '',
-      registeredUsersLastIndex: 0,
-      userDataForm: {
+      registeredUsers: [], //зареганные юзеры
+      searchData: '', //строка поиска
+      userDataForm: { //форма для сабмита
         name: '',
-        sex: 'мужской',
+        sex: 'm',
         date: '',
         address: '',
         medicine: '',
-        id: '',
+        id: '',//из бд, вычисляется автоматически, изначально отсутствует
       },
     };
     this.handleSubmit = this.handleSubmit.bind(this);//сабмит сохраняет пользователя или изменяет если он уже существовал
-    //в конце возвращает пустую форму для последующих добавлений
-    this.handleChange = this.handleChange.bind(this);//все что вводится в поле сразу добавляется
-    //в поле поиска в стейте
+    //в конце возвращает пустую форму для последующих добавлений 1
+    this.handleChange = this.handleChange.bind(this);//все что вводится в поле сразу + в поле поиска в стейте 2
     this.handleChangeUserDataForm = this.handleChangeUserDataForm.bind(this);
-    //при потере фокуса
+    //при потере фокуса 3
     //данные из этого поля
     //должна сразу оказаться в стейте
-    this.handleEditUser = this.handleEditUser.bind(this);//редактирование
-    //вытаскивает из события ид юзера и находит этого юзера в данных
-    //затем в каждое соответсвующее поле регистрации кладет данные юзера для последующего редактирования
-    this.handleDeleteUser = this.handleDeleteUser.bind(this);//удаление
-    //вытаскивает из события ид юзера и находит этого юзера в данных
-    //затем фильтрует сохраненных юзеров и выводит список юзеров без этого юзера
+    this.handleEditUser = this.handleEditUser.bind(this);//редактирование 4
+    //вытаскивает из события ид юзера кладет юзера в стейт для последующего редактирования
+    this.handleDeleteUser = this.handleDeleteUser.bind(this);//удаление 5
+    //вытаскивает из события ид юзера удаляет в бд, фильтрует сохраненных юзеров и выводит обновленный список
   }
 
   componentDidMount() {
-    const newState = JSON.parse(localStorage.getItem("newState"))
-    this.setState(newState);
+    fetch('/users').then(res => res.json()).then(data => {
+      this.setState({
+        registeredUsers: [...data],
+        searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
+        userDataForm: {
+          name: '',
+          sex: 'm',
+          date: '',
+          address: '',
+          medicine: '',
+          id: '',
+        },
+      });
+    }).catch((e) => console.log('some error', e));
   }
 
-  handleSubmit(event) {
-    event.preventDefault();
-    const { registeredUsers, registeredUsersLastIndex, userDataForm } = this.state;
-    let newState = {};
+  handleSubmit(event) {//сабмит формы
+    //event.preventDefault();
+    const { registeredUsers, userDataForm } = this.state;
 
     const user = {
       name: userDataForm.name,
@@ -55,57 +62,82 @@ class Index extends React.Component {
       gender: userDataForm.sex,
       living_address: userDataForm.address,
       insurance_policy: userDataForm.medicine,
+      id: userDataForm.id,
     };
-    console.log('sdfgasgwar');
 
-    fetch('/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' //'application/json;charset=utf-8'
+    if (userDataForm.id == '') {//если ид ne существует то запрос пост
+        fetch('/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type':  'application/json'
+            },
+            body: JSON.stringify(user),
+          }).then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+          }).catch((e) => console.log('some error', e));
+    } else {//если ид существует то запрос путi на изменение юзера
+          fetch(`/users/${userDataForm.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type':  'application/json'
+              },
+              body: JSON.stringify(user),
+            }).then((response) => {
+              return response.json();
+            })
+            .then((data) => {
+              console.log(data);
+            });
+       };
+    fetch('/users').then(res => res.json()).then(data => {
+      this.setState({
+        registeredUsers: [...data],
+        searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
+        userDataForm: {
+          name: '',
+          sex: 'm',
+          date: '',
+          address: '',
+          medicine: '',
+          id: '',
         },
-        body: user,
-      }).then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        console.log(data);
       });
-
-    // if (userDataForm.id == '') {
-    //   const newId = registeredUsersLastIndex + 1;
-    //   userDataForm.id = newId;
-    //   const newUser = { ...userDataForm };
-    //   newState.registeredUsers = [...registeredUsers, newUser];
-    //   newState.registeredUsersLastIndex = newId;
-    // } else {
-    //   const newRegisteredUsers = registeredUsers.map((user, i) => {
-    //     if (user.id == userDataForm.id) {
-    //       const oldId = user.id;
-    //       userDataForm.id = oldId;
-    //       user[i] = userDataForm;
-    //       return user[i];
-    //     }
-    //     return user;
-    //   });
-      // newState.registeredUsers = newRegisteredUsers;
-    // }
-    newState.userDataForm = {
-        name: '',
-        sex: 'мужской',
-        date: '',
-        address: '',
-        medicine: '',
-        id: '',
-    };
-    //var serialObjNewState = JSON.stringify(newState)
-    //localStorage.setItem('newState', serialObjNewState);
+    }).catch((e) => console.log('some error', e));
   }
 
   handleChange(event) {
-    this.setState({ searchData: event.target.value })
+    this.setState({ searchData: event.target.value }, async () => {
+      let { searchData } = this.state;
+
+      console.log('event.target.value');
+      console.log(event.target.value);
+
+      console.log('searchData');
+      console.log(searchData);
+
+      console.log('zapros');
+      console.log(`/users?name=${searchData}`);
+
+      fetch(`/users?name=${searchData}`).then(res => res.json()).then(data => {
+        console.log(data);
+        this.setState({
+          registeredUsers: [...data],
+          searchData: searchData,
+        });
+      }).catch((e) => console.log('some error', e));
+    }) // внесли в стейт
+    //все что вводится в поле сразу добавляется
+    //в поле поиска в стейте
+
   }
 
   handleChangeUserDataForm(event) {
+    //при потере фокуса
+    //данные из этого поля
+    //должна сразу оказаться в стейте
     const oldDataForm = this.state.userDataForm;
     const { name, value } = event.target;
     const newState = { userDataForm: { ...oldDataForm, [name]: value } };
@@ -113,51 +145,68 @@ class Index extends React.Component {
   }
 
   handleEditUser(event) {
+    //редактирование
+    //вытаскивает из события ид юзера и помещает этого юзера в форму для редактирования
     const idUserForEdit = event.target.dataset.userId;
     const { registeredUsers, userDataForm } = this.state;
-    const filterUsersById = registeredUsers.filter((el) => el['id'] == idUserForEdit)[0];
-    const { name, sex, date, address, medicine, id } = filterUsersById;
+    //надо отфильтровать юзера и одного поместить в форму для последующего сабмита
 
+    const filterUsersById = registeredUsers.filter((el) => el['id'] == idUserForEdit)[0];
+    const { name, birth_date, gender, living_address, insurance_policy, id } = filterUsersById;
       this.setState({
         userDataForm: {
           name: name,
-          sex: sex,
-          date: date,
-          address: address,
-          medicine: medicine,
+          sex: gender,
+          date: birth_date,
+          address: living_address,
+          medicine: insurance_policy,
           id: id,
         }
       });
   }
 
   handleDeleteUser(event) {
+    //удаление
     const idUserForEdit = event.target.dataset.userId;
-    const { registeredUsers, userDataForm } = this.state;
+
+    fetch(`/users/${idUserForEdit}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type':  'application/json'
+        },
+      }).then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+
+    const { registeredUsers } = this.state;
     const filterUsersById = registeredUsers.filter((el) => el['id'] != idUserForEdit);
     this.setState({registeredUsers: [...filterUsersById ]});
   }
 
   render() {
     const { searchData, registeredUsers, userDataForm } = this.state;
-    const filterUsers = registeredUsers.filter((el) => {
-      const { name, sex, date, address, medicine } = el;
-      return name.includes(searchData) ||
-             sex.includes(searchData) ||
-             date.includes(searchData) ||
-             address.includes(searchData) ||
-             medicine.includes(searchData);
-    });
+    // const filterUsers = registeredUsers.filter((el) => {
+    //   const { name, sex, date, address, medicine } = el;
+    //   return name.includes(searchData) ||
+    //          sex.includes(searchData) ||
+    //          date.includes(searchData) ||
+    //          address.includes(searchData) ||
+    //          medicine.includes(searchData);
+    // });
 
-    const rows = filterUsers.map((el, i) => {
-      const { name, sex, date, address, medicine, id } = el;
+    const rows = registeredUsers.map((el, i) => {
+      const { name, birth_date, gender, living_address, insurance_policy, id } = el;
        return (
          <tr key={id}>
            <td>{i + 1}</td>
            <td>{name}</td>
-           <td>{sex}</td>
-           <td>{date}</td>
-           <td>{address}</td>
-           <td>{medicine}</td>
+           <td>{birth_date}</td>
+           <td>{gender}</td>
+           <td>{living_address}</td>
+           <td>{insurance_policy}</td>
            <td>
               <a href="#" name='edit' data-user-id={id} onClick={this.handleEditUser}>Редактировать &nbsp;</a>
               <a href="#" name='delete' data-user-id={id} onClick={this.handleDeleteUser}>Удалить</a>
