@@ -53,7 +53,6 @@ class Index extends React.Component {
   }
 
   handleSubmit(event) {//сабмит формы
-    //event.preventDefault();
     const { registeredUsers, userDataForm } = this.state;
 
     const user = {
@@ -76,7 +75,13 @@ class Index extends React.Component {
             return response.json();
           })
           .then((data) => {
-            console.log(data);
+            let arr = [];
+            for (const [key, value] of Object.entries(data)) {
+              arr = [...arr, `${key}: ${value}`];
+            }
+            return arr.join('; ');
+          }).then((str) => {
+            alert(`Пациент ${str} зарегистрирован`);
           }).catch((e) => console.log('some error', e));
     } else {//если ид существует то запрос путi на изменение юзера
           fetch(`/users/${userDataForm.id}`, {
@@ -87,10 +92,9 @@ class Index extends React.Component {
               body: JSON.stringify(user),
             }).then((response) => {
               return response.json();
-            })
-            .then((data) => {
-              console.log(data);
-            });
+            }).then((data) => {
+              alert(data);
+            }).catch((e) => console.log('some error', e));
        };
     fetch('/users').then(res => res.json()).then(data => {
       this.setState({
@@ -111,15 +115,6 @@ class Index extends React.Component {
   handleChange(event) {
     this.setState({ searchData: event.target.value }, async () => {
       let { searchData } = this.state;
-
-      console.log('event.target.value');
-      console.log(event.target.value);
-
-      console.log('searchData');
-      console.log(searchData);
-
-      console.log('zapros');
-      console.log(`/users?name=${searchData}`);
 
       fetch(`/users?name=${searchData}`).then(res => res.json()).then(data => {
         console.log(data);
@@ -176,9 +171,14 @@ class Index extends React.Component {
         },
       }).then((response) => {
         return response.json();
-      })
-      .then((data) => {
-        console.log(data);
+      }).then((data) => {
+        let arr = [];
+        for (const [key, value] of Object.entries(data)) {
+          arr = [...arr, `${key}: ${value}`];
+        }
+        return arr.join('; ');
+      }).then((str) => {
+        alert(`Пациент ${str} удален`);
       });
 
     const { registeredUsers } = this.state;

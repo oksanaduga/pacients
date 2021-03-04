@@ -16,7 +16,7 @@ const getUsers = async (searchData = '') => {
   let searchStr;
   if (searchData) {
     const state =`
-      SELECT * FROM users WHERE name LIKE '${searchData}% ORDER BY id'
+      SELECT * FROM users WHERE name ILIKE '${searchData}%' ORDER BY id
     `;
     searchStr = await db.any(state);
   } else {
@@ -127,7 +127,7 @@ router.put('/:id', async (req, res, next) => {
 
   const newUser = await updateUser(data); //{ name: '', date: '' };
   res.status(200);
-  res.json({ user: newUser });
+  res.json(newUser);
 });
 
 //=======================================================================
@@ -140,9 +140,9 @@ const deleteById = async (data) => {
     DELETE FROM users WHERE id = ${data} RETURNING name;
   `;
 
-  const userName = await db.one(state);
+  const user = await db.one(state);
 
-  return `user ${ userName.name } delete`;
+  return user;
 };
 
 router.delete('/:id', async (req, res, next) => {
@@ -156,7 +156,7 @@ router.delete('/:id', async (req, res, next) => {
   }
   const deleteUser = await deleteById(id);
   res.status(200);
-  res.json({ user: deleteUser });
+  res.json(deleteUser);
   //next();
 })
 //=======================================================================
