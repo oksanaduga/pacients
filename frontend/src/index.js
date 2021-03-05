@@ -73,13 +73,12 @@ class Index extends React.Component {
             body: JSON.stringify(user),
           }).then((response) => {
             return response.json();
-          })
-          .then((data) => {
+          }).then(() => {
             let arr = [];
-            for (const [key, value] of Object.entries(data)) {
+            for (const [key, value] of Object.entries(this.state.userDataForm)) {
               arr = [...arr, `${key}: ${value}`];
             }
-            return arr.join('; ');
+            return arr.join('\n');
           }).then((str) => {
             alert(`Пациент ${str} зарегистрирован`);
           }).catch((e) => console.log('some error', e));
@@ -93,7 +92,13 @@ class Index extends React.Component {
             }).then((response) => {
               return response.json();
             }).then((data) => {
-              alert(data);
+              let arr = [];
+              for (const [key, value] of Object.entries(data)) {
+                arr = [...arr, `${key}: ${value}`];
+              }
+              return arr.join('\n');
+            }).then((str) => {
+              alert(`Пациент ${str} изменен`);
             }).catch((e) => console.log('some error', e));
        };
     fetch('/users').then(res => res.json()).then(data => {
@@ -126,7 +131,6 @@ class Index extends React.Component {
     }) // внесли в стейт
     //все что вводится в поле сразу добавляется
     //в поле поиска в стейте
-
   }
 
   handleChangeUserDataForm(event) {
@@ -188,14 +192,6 @@ class Index extends React.Component {
 
   render() {
     const { searchData, registeredUsers, userDataForm } = this.state;
-    // const filterUsers = registeredUsers.filter((el) => {
-    //   const { name, sex, date, address, medicine } = el;
-    //   return name.includes(searchData) ||
-    //          sex.includes(searchData) ||
-    //          date.includes(searchData) ||
-    //          address.includes(searchData) ||
-    //          medicine.includes(searchData);
-    // });
 
     const rows = registeredUsers.map((el, i) => {
       const { name, birth_date, gender, living_address, insurance_policy, id } = el;
