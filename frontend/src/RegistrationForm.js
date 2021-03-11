@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 function RegistrationForm(props) {
     const data = props.value;
-    //const dataForm = this.props.userDataForm;
+
     return(
       <form onSubmit={props.submit}>
         <div class="mb-3">
@@ -13,6 +13,7 @@ function RegistrationForm(props) {
               onChange={props.change}
               placeholder="Иванов Иван Иванович"
           />
+          <div id="name" value={data.errors.name}></div>
         </div>
 
         <div class="mb-3">

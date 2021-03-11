@@ -20,6 +20,13 @@ class Index extends React.Component {
         address: '',
         medicine: '',
         id: '',//из бд, вычисляется автоматически, изначально отсутствует
+        errors: {//добавила для валидации, не знаю как сделать проще пока так
+          name: '',
+          sex: '',
+          date: '',
+          address: '',
+          medicine: '',
+        },
       },
     };
     this.handleSubmit = this.handleSubmit.bind(this);//сабмит сохраняет пользователя или изменяет если он уже существовал
@@ -47,6 +54,13 @@ class Index extends React.Component {
           address: '',
           medicine: '',
           id: '',
+          errors: {
+            name: '',
+            sex: '',
+            date: '',
+            address: '',
+            medicine: '',
+          },
         },
       });
     }).catch((e) => console.log('some error', e));
@@ -64,6 +78,16 @@ class Index extends React.Component {
       id: userDataForm.id,
     };
 
+    let status = function (response) {
+      if (response.status !== 200) {
+        return Promise.reject(new Error(response.statusText))
+      }
+      return Promise.resolve(response)
+    }
+    let json = function (response) {
+      return response.json()
+    }
+
     if (userDataForm.id == '') {//если ид ne существует то запрос пост
         fetch('/users', {
             method: 'POST',
@@ -71,17 +95,31 @@ class Index extends React.Component {
               'Content-Type':  'application/json'
             },
             body: JSON.stringify(user),
-          }).then((response) => {
-            return response.json();
-          }).then(() => {
-            let arr = [];
-            for (const [key, value] of Object.entries(this.state.userDataForm)) {
-              arr = [...arr, `${key}: ${value}`];
-            }
-            return arr.join('\n');
-          }).then((str) => {
-            alert(`Пациент ${str} зарегистрирован`);
-          }).catch((e) => console.log('some error', e));
+          })
+            .then(status)
+            .then(json)
+            .then(() => {
+              let arr = [];
+              for (const [key, value] of Object.entries(this.state.userDataForm)) {
+                arr = [...arr, `${key}: ${value}`];
+              }
+              return arr.join('\n');
+            })
+            .then((str) => {
+              alert(`Пациент ${str} зарегистрирован`);
+            })
+            .catch((error) => {
+              return error.map(({ msg, param }) => {
+                this.setState({
+                  userDataForm: {
+                    errors: {
+                      [param]: msg,
+                    },
+                  },
+                });
+              });
+              console.log('error', error)
+            });
     } else {//если ид существует то запрос путi на изменение юзера
           fetch(`/users/${userDataForm.id}`, {
               method: 'PUT',
@@ -101,20 +139,29 @@ class Index extends React.Component {
               alert(`Пациент ${str} изменен`);
             }).catch((e) => console.log('some error', e));
        };
-    fetch('/users').then(res => res.json()).then(data => {
-      this.setState({
-        registeredUsers: [...data],
-        searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
-        userDataForm: {
-          name: '',
-          sex: 'm',
-          date: '',
-          address: '',
-          medicine: '',
-          id: '',
-        },
-      });
-    }).catch((e) => console.log('some error', e));
+
+         fetch('/users').then(res => res.json()).then(data => {
+           this.setState({
+             registeredUsers: [...data],
+             searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
+             userDataForm: {
+               name: '',
+               sex: 'm',
+               date: '',
+               address: '',
+               medicine: '',
+               id: '',
+               errors: {
+                 name: '',
+                 sex: '',
+                 date: '',
+                 address: '',
+                 medicine: '',
+               },
+             },
+           });
+         }).catch((e) => console.log('some error', e));
+
   }
 
   handleChange(event) {

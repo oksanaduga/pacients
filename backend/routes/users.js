@@ -3,6 +3,7 @@ var router = express.Router();
 const db = require('../db');
 const validateParams = require('../extraFunction/validate.js');
 const dayjs = require('dayjs');
+const { body, validationResult } = require('express-validator');
 
 // GET /users/ - получить все +
 // GET /users/:id - получить один + --
@@ -45,7 +46,6 @@ router.get('/', async (req, res, next) => {
         return newEl;
       }));
   res.json(searchStrMap);
-  //next();
 });
 //====================================================
 
@@ -62,14 +62,25 @@ const createUser = async (data) => {
   return { id, ...data };
 };
 
-router.post('/', async (req, res, next) => {
+router.post('/', body('name').isLength({ min: 5 }), async (req, res, next) => {
   const data = req.body;
-  const result = validateParams(data);
-  if(result.errors) {
-   res.status(400);
-    res.json(result.errors);
-   return;
- }
+
+  const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      //next(errors)
+     return res.status(400).json({ errors.array() }); //хочу вернуть ошибки валидации с пояснениями
+     //может нужно не возвращать а отдавать нексту??????как только делаю проверку этого if
+     //запрос на  ГЕТ возвращает 500, хотя это проверка при запросе пост
+
+     }
+    }
+
+ //  const result = validateParams(data);
+ //  if(result.errors) {
+ //   res.status(400);
+ //    res.json(result.errors);
+ //   return;
+ // }
  const newUser = await createUser(data); //{ name: '', date: '' };
  res.status(201);
  res.json(newUser);
