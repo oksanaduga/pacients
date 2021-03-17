@@ -8,3 +8,10 @@
 .col-9 {
   background-color: #d3ded4;
 }
+
+.errors {
+  color: red;
+  text-align: justify;
+  font-size: x-small;
+  margin: 5px;
+}

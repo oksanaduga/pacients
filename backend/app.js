@@ -10,7 +10,6 @@ var logger = require('morgan');//для логера
 //Каждый токен — это имя вида :url,
 //и на месте каждого токена в заданном формате
 //появляется значение, соответствующее текущему запросу
-const { body, validationResult } = require('express-validator');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,10 +17,6 @@ var usersRouter = require('./routes/users');
 var bodyParser = require('body-parser');
 
 var app = express();
-
-// view engine setup
-//app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'pug');
 
 app.use(logger('dev'));//для логера
 app.use(express.json());//Это встроенная функция промежуточного программного
@@ -48,12 +43,8 @@ app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-  if(errors) {
-    res.status(400).json({ errors.array() });
-  }
 
-  // render the error page
-  res.status(err.status || 500);//может тут нужна отдельна обработка??
+  res.status(err.status || 500);
   res.send('error', { error: err });
 });
 

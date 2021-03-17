@@ -3,7 +3,6 @@ var router = express.Router();
 const db = require('../db');
 const validateParams = require('../extraFunction/validate.js');
 const dayjs = require('dayjs');
-const { body, validationResult } = require('express-validator');
 
 // GET /users/ - получить все +
 // GET /users/:id - получить один + --
@@ -49,7 +48,6 @@ router.get('/', async (req, res, next) => {
 });
 //====================================================
 
-
 // POST /users/ - создать еще один +
 const createUser = async (data) => {
   const state = `
@@ -62,29 +60,37 @@ const createUser = async (data) => {
   return { id, ...data };
 };
 
-router.post('/', body('name').isLength({ min: 5 }), async (req, res, next) => {
+const  checkUserInBd = async (data) => {
+  const state =`
+    SELECT * FROM users WHERE insurance_policy ILIKE '${data}%' ORDER BY id
+  `;
+  searchUser = await db.any(state);
+  return searchUser;
+};
+
+router.post('/', async (req, res, next) => {
   const data = req.body;
 
-  const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      //next(errors)
-     return res.status(400).json({ errors.array() }); //хочу вернуть ошибки валидации с пояснениями
-     //может нужно не возвращать а отдавать нексту??????как только делаю проверку этого if
-     //запрос на  ГЕТ возвращает 500, хотя это проверка при запросе пост
+  const errors = validateParams(data);
+  if (errors.length > 0) {
+   res.status(200);
+   res.json({ errors: errors });
+   return;
+  }
 
-     }
-    }
+  const checkUser = await checkUserInBd(req.body.insurance_policy);
+  console.log('checkUser');
+  console.log(checkUser);
 
- //  const result = validateParams(data);
- //  if(result.errors) {
- //   res.status(400);
- //    res.json(result.errors);
- //   return;
- // }
- const newUser = await createUser(data); //{ name: '', date: '' };
- res.status(201);
- res.json(newUser);
- //next();//  чтобы запрос не зависал
+  if(checkUser.length > 0) {
+    res.status(200);
+    res.json('User exist');
+    return;
+  }
+
+  const newUser = await createUser(data); //{ name: '', date: '' };
+  res.status(201);
+  res.json(newUser);
 });
 
 //=======================================================================
@@ -124,15 +130,17 @@ router.put('/:id', async (req, res, next) => {
   const checkIdAtBd =  await findById(id);
 
   if(!checkIdAtBd) {
-   res.status(404);
-   res.render('error: user does not exist');
-   return;
+    res.status(200);
+    res.json('User not exist');
+    return;
   }
 
-  const result = await validateParams(data);
-  if(result.errors) {
-   res.status(400);
-   res.render('error');
+  const errors = validateParams(data);
+  console.log('errors');
+  console.log(errors);
+  if (errors.length > 0) {
+   res.status(200);
+   res.json({ errors: errors });
    return;
   }
 
@@ -152,7 +160,6 @@ const deleteById = async (data) => {
   `;
 
   const user = await db.one(state);
-
   return user;
 };
 
@@ -168,7 +175,6 @@ router.delete('/:id', async (req, res, next) => {
   const deleteUser = await deleteById(id);
   res.status(200);
   res.json(deleteUser);
-  //next();
 })
 //=======================================================================
 

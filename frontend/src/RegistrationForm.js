@@ -13,7 +13,7 @@ function RegistrationForm(props) {
               onChange={props.change}
               placeholder="Иванов Иван Иванович"
           />
-          <div id="name" value={data.errors.name}></div>
+        <p class="errors">{data.invalidInformation.name}</p>
         </div>
 
         <div class="mb-3">
@@ -24,6 +24,7 @@ function RegistrationForm(props) {
                 <option>m</option>
                 <option>f</option>
            </select>
+           <p class="errors">{data.invalidInformation.gender}</p>
           </div>
 
           <div class="mb-3">
@@ -32,6 +33,7 @@ function RegistrationForm(props) {
               value={data.date}
               onChange={props.change}
             />
+           <p class="errors">{data.invalidInformation.birth_date}</p>
           </div>
 
           <div class="mb-3">
@@ -40,6 +42,7 @@ function RegistrationForm(props) {
               value={data.address}
               onChange={props.change}
             />
+           <p class="errors">{data.invalidInformation.living_address}</p>
           </div>
 
           <div class="mb-3">
@@ -49,6 +52,7 @@ function RegistrationForm(props) {
                 onChange={props.change}
                 placeholder="00000000000"
              />
+            <p class="errors">{data.invalidInformation.insurance_policy}</p>
           </div>
 
           <input class="btn btn-light" type='submit' value='Сохранить'/>

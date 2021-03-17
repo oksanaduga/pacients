@@ -20,7 +20,7 @@ class Index extends React.Component {
         address: '',
         medicine: '',
         id: '',//из бд, вычисляется автоматически, изначально отсутствует
-        errors: {//добавила для валидации, не знаю как сделать проще пока так
+        invalidInformation: {
           name: '',
           sex: '',
           date: '',
@@ -42,11 +42,11 @@ class Index extends React.Component {
     //вытаскивает из события ид юзера удаляет в бд, фильтрует сохраненных юзеров и выводит обновленный список
   }
 
-  componentDidMount() {
+  getUsers = () => {
     fetch('/users').then(res => res.json()).then(data => {
       this.setState({
         registeredUsers: [...data],
-        searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
+        searchData: this.state.searchData,
         userDataForm: {
           name: '',
           sex: 'm',
@@ -54,20 +54,25 @@ class Index extends React.Component {
           address: '',
           medicine: '',
           id: '',
-          errors: {
+          invalidInformation: {
             name: '',
-            sex: '',
-            date: '',
-            address: '',
-            medicine: '',
+            gender: '',
+            birth_date: '',
+            living_address: '',
+            insurance_policy: '',
           },
         },
       });
     }).catch((e) => console.log('some error', e));
   }
 
+  componentDidMount() {
+    this.getUsers();
+  }
+
   handleSubmit(event) {//сабмит формы
-    const { registeredUsers, userDataForm } = this.state;
+    event.preventDefault();
+    const { registeredUsers, userDataForm, } = this.state;
 
     const user = {
       name: userDataForm.name,
@@ -78,17 +83,29 @@ class Index extends React.Component {
       id: userDataForm.id,
     };
 
-    let status = function (response) {
-      if (response.status !== 200) {
-        return Promise.reject(new Error(response.statusText))
-      }
-      return Promise.resolve(response)
-    }
     let json = function (response) {
-      return response.json()
+      return response.json();
     }
 
-    if (userDataForm.id == '') {//если ид ne существует то запрос пост
+    let putInvalidInformation = async (data) => {
+      const newinvalidInformation = await data.reduce((acc, { param, msg }) => {
+        return { ...acc, [param]: msg, };
+      }, {});
+      return newinvalidInformation;
+    }
+
+    let putValidInformation = async (data) => {
+      let arr = [];
+      for (const [key, value] of Object.entries(this.state.userDataForm)) {
+        if (!(key === 'invalidInformation')) {
+          arr = [...arr, `${key}: ${value}`];
+        }
+      }
+      const str = await arr.join('\n');
+      return str;
+    }
+
+    if (!(userDataForm.id > 0)) {//если ид ne существует то запрос пост
         fetch('/users', {
             method: 'POST',
             headers: {
@@ -96,30 +113,40 @@ class Index extends React.Component {
             },
             body: JSON.stringify(user),
           })
-            .then(status)
             .then(json)
-            .then(() => {
-              let arr = [];
-              for (const [key, value] of Object.entries(this.state.userDataForm)) {
-                arr = [...arr, `${key}: ${value}`];
-              }
-              return arr.join('\n');
-            })
-            .then((str) => {
-              alert(`Пациент ${str} зарегистрирован`);
-            })
-            .catch((error) => {
-              return error.map(({ msg, param }) => {
-                this.setState({
-                  userDataForm: {
-                    errors: {
-                      [param]: msg,
-                    },
-                  },
+            .then((data) => {
+              if (data.errors) {
+                return putInvalidInformation(data.errors).then((errors) => {
+                  this.setState({
+                    userDataForm: {
+                      ...userDataForm,
+                      invalidInformation: errors,
+                    }
+                  })
+                })
+              } else if (data === 'User exist') {
+                alert(`Пациент с таким ОМС уже существует`);
+              } else {
+                return putValidInformation(data)
+                .then((str) => {
+                  this.setState({
+                    userDataForm: {
+                      ...userDataForm,
+                      invalidInformation: {
+                        name: '',
+                        gender: '',
+                        birth_date: '',
+                        living_address: '',
+                        insurance_policy: '',
+                      },
+                     }
+                  });
+                  alert(`Пациент ${str} изменен`);
+                  this.getUsers();
                 });
-              });
-              console.log('error', error)
-            });
+              }
+            })
+            .catch((error) => error);
     } else {//если ид существует то запрос путi на изменение юзера
           fetch(`/users/${userDataForm.id}`, {
               method: 'PUT',
@@ -127,42 +154,44 @@ class Index extends React.Component {
                 'Content-Type':  'application/json'
               },
               body: JSON.stringify(user),
-            }).then((response) => {
-              return response.json();
-            }).then((data) => {
-              let arr = [];
-              for (const [key, value] of Object.entries(data)) {
-                arr = [...arr, `${key}: ${value}`];
+            })
+            .then(json)
+            .then((data) => {
+              if (data.errors) {
+                return putInvalidInformation(data.errors).then((errors) => {
+                  this.setState({
+                    userDataForm: {
+                      ...userDataForm,
+                      invalidInformation: errors,
+                    }
+                  })
+                })
+              } else if (data === 'User not exist') {
+                alert(`Пациент с таким ОМС не существует`);
+              } else {
+                return putValidInformation(data)
+                .then((str) => {
+                  this.setState({
+                    userDataForm: {
+                      ...userDataForm,
+                      invalidInformation: {
+                        name: '',
+                        gender: '',
+                        birth_date: '',
+                        living_address: '',
+                        insurance_policy: '',
+                      },
+                     }
+                  });
+                  alert(`Пациент ${str} зарегистрирован`);
+                  this.getUsers();
+                });
               }
-              return arr.join('\n');
-            }).then((str) => {
-              alert(`Пациент ${str} изменен`);
-            }).catch((e) => console.log('some error', e));
-       };
-
-         fetch('/users').then(res => res.json()).then(data => {
-           this.setState({
-             registeredUsers: [...data],
-             searchData: this.state.searchData,//если что-то было в поиске то занести сюда если нет надо внести ''
-             userDataForm: {
-               name: '',
-               sex: 'm',
-               date: '',
-               address: '',
-               medicine: '',
-               id: '',
-               errors: {
-                 name: '',
-                 sex: '',
-                 date: '',
-                 address: '',
-                 medicine: '',
-               },
-             },
-           });
-         }).catch((e) => console.log('some error', e));
-
+            })
+            .catch((error) => error);
+    }
   }
+
 
   handleChange(event) {
     this.setState({ searchData: event.target.value }, async () => {
@@ -186,7 +215,19 @@ class Index extends React.Component {
     //должна сразу оказаться в стейте
     const oldDataForm = this.state.userDataForm;
     const { name, value } = event.target;
-    const newState = { userDataForm: { ...oldDataForm, [name]: value } };
+    const newState = {
+      userDataForm: {
+        ...oldDataForm,
+        [name]: value,
+        invalidInformation: {
+          name: '',
+          gender: '',
+          birth_date: '',
+          living_address: '',
+          insurance_policy: '',
+        },
+      }
+    };
     this.setState(newState);
   }
 
@@ -201,6 +242,7 @@ class Index extends React.Component {
     const { name, birth_date, gender, living_address, insurance_policy, id } = filterUsersById;
       this.setState({
         userDataForm: {
+          ...userDataForm,
           name: name,
           sex: gender,
           date: birth_date,
