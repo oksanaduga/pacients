@@ -6,7 +6,7 @@
   "workspaces": ["backend/*", "frontend/*"],
   "scripts": {
     "postinstall": "(cd backend && npm install); (cd frontend && npm install)"
-  },,
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oksanaduga/pacients.git"
