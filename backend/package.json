@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "start:watch": "nodemon ./bin/www",
-    "db:create": "node ./dbCreate.js",
+    "db:createLocal": "node ./dbCreate.js",
+    "db:create": "node ./dbCreateProd.js",
     "db:migrate": "node ./migrate.js",
     "test": "jest"
   },
