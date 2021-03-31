@@ -1,16 +1,10 @@
 require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
-var methodOverride = require('method-override');//Позволяет использовать HTTP-команды,
-//такие как PUT или DELETE, в местах, где клиент не поддерживает их.
+var methodOverride = require('method-override');//Позволяет использовать HTTP-команды,такие как PUT или DELETE
 var path = require('path');
 var cookieParser = require('cookie-parser');//функцию промежуточной обработки для корректной работы cookie в Express.
-// для чего это нужно???
 var logger = require('morgan');//для логера
-//Каждый токен — это имя вида :url,
-//и на месте каждого токена в заданном формате
-//появляется значение, соответствующее текущему запросу
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -18,19 +12,16 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
-app.use(logger('dev'));//для логера
-app.use(express.json());//Это встроенная функция промежуточного программного
-//обеспечения в Express. Он анализирует входящие запросы
-//с полезной нагрузкой JSON и основан на парсере тела.
-app.use(methodOverride('_method'));//использование
-app.use(express.urlencoded({ extended: false }));//https://github.com/expressjs/body-parser#bodyparserurlencodedoptions
+app.use(logger('dev'));
+app.use(express.json());
+app.use(methodOverride('_method'));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 const pubPath = path.join(__dirname, '..', 'frontend', 'public');
-app.use(express.static(pubPath));//использоание статических файлов типа кратинки и css
+app.use(express.static(pubPath));
 
 app.use('/', indexRouter);
-// for parsing application/json
-app.use(bodyParser.json());// для чего тут опять
+app.use(bodyParser.json());
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
