@@ -11,15 +11,20 @@ const table = `
     insurance_policy varchar(255)
   );
 `;
+
+
 console.log('table: ', table);
 
 const newTable = async () => {
   console.log('newTable start');
 
-  const result = await db.none(table);
-  console.log('result', result);
-  console.log('end');
-  return result;
+  client.query(table, (err, res) => {
+    if (err) throw err;
+    console.log('res', res);
+    console.log('end');
+    client.end();
+  });
+
 };
 
 newTable();
