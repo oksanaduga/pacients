@@ -8,6 +8,7 @@
     "frontend/*"
   ],
   "scripts": {
+    "prepare": "cd backend && npm run db:migrate",
     "postinstall": "(cd backend && npm install); (cd frontend && npm install)"
   },
   "repository": {
