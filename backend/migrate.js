@@ -1,5 +1,5 @@
 require('dotenv').config();
-const db = require('./db');
+const client = require('./db');
 console.log('start migrate');
 const table = `
   CREATE TABLE IF NOT EXISTS users (
