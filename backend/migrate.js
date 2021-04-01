@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require('./db');
-
+console.log('start migrate');
 const table = `
   CREATE TABLE IF NOT EXISTS users (
     id serial,
@@ -11,7 +11,15 @@ const table = `
     insurance_policy varchar(255)
   );
 `;
+console.log('table: ', table);
 
-const newTable = async () => await db.none(table);
+const newTable = async () => {
+  console.log('newTable start');
 
-module.exports = newTable;
+  const result = await db.none(table);
+  console.log('result', result);
+  console.log('end');
+  return result;
+};
+
+newTable();
