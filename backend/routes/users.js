@@ -18,9 +18,9 @@ const getUsers = async (searchData = '') => {
     const state =`
       SELECT * FROM users WHERE name ILIKE '${searchData}%' ORDER BY id
     `;
-    searchStr = await db.any(state);
+    searchStr = await db.query(state);
   } else {
-    searchStr = await db.any('SELECT * FROM users ORDER BY id');
+    searchStr = await db.query('SELECT * FROM users ORDER BY id');
   }
   return searchStr;
 };
@@ -56,7 +56,7 @@ const createUser = async (data) => {
   RETURNING id
   `;
 
-  const { id } = await db.one(state, data);
+  const { id } = await db.query(state, data);
   return { id, ...data };
 };
 
@@ -64,7 +64,7 @@ const  checkUserInBd = async (data) => {
   const state =`
     SELECT * FROM users WHERE insurance_policy ILIKE '${data}%' ORDER BY id
   `;
-  searchUser = await db.any(state);
+  searchUser = await db.query(state);
   return searchUser;
 };
 
@@ -100,7 +100,7 @@ const  findById = async (userId) => {
   const state = `
     SELECT id FROM users WHERE id = ${userId}
   `;
-  const { id } = await db.one(state);
+  const { id } = await db.query(state);
   return id;
 };
 
@@ -111,7 +111,7 @@ const updateUser = async (data) => {
     WHERE id = $[id];
   `;
 
-  await db.none(state, data);
+  await db.query(state, data);
   return { ...data };
 };
 
@@ -150,7 +150,7 @@ const deleteById = async (data) => {
     DELETE FROM users WHERE id = ${data} RETURNING name;
   `;
 
-  const user = await db.one(state);
+  const user = await db.query(state);
   return user;
 };
 

@@ -1,11 +1,17 @@
 require('dotenv').config();
-const pgp = require('pg-promise')();
 
-const databaseUrl = new URL(process.env.DATABASE_URL);
-const newDbName = databaseUrl.pathname.split('/')[1];
-databaseUrl.pathname = '/';
-const cn = databaseUrl.toString();
-const db = pgp(cn);
-const createDb = `CREATE DATABASE ${newDbName}`;
+//const { Client } = require('pg');
+var pgtools = require('pgtools');
 
-db.none(createDb);
+pgtools.createdb({
+  user: 'postgres',
+  password: '',
+  port: 5432,
+  host: 'localhost'
+}, 'myapp_test_db', function (err, res) {
+  if (err) {
+    console.error(err);
+    process.exit(-1);
+  }
+  console.log(res);
+});
